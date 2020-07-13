@@ -1,12 +1,36 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../../middleware/auth');
+
+const { Profile } = require('../../models/Profile');
+const { User } = require('../../models/User');
 
 // @route  Get api/profile
 // @desc   Test route
 // @acess  Public
-router.get('/', (req,res) => res.send('Profile Route'));
+//router.get('/', (req,res) => res.send('Profile Route'));
 
-router.post("/posts", async (req, res) => {
+// @route  Get api/profile/me
+// @desc   Get current users profile
+// @acess  Private
+router.get('/me', auth, async (req,res) => {
+  try{
+    const profile = await Profile.findOne({ user: req.user.id }).populate('user',
+    ['name','avatar']);
+
+    if(!profile){
+      return res.status(400).json({ msg: 'There is no profile for this user' });
+    }
+
+    res.json(profile);
+  } catch(err) {
+    console.log(error);
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+/* router.post("/posts", async (req, res) => {
     const post = new Post({
         userId: req.body.userId,
         fName: req.body.fName,
@@ -27,6 +51,6 @@ router.post("/posts", async (req, res) => {
     })
     await post.save()
     res.send(post)
-  })
+  }) */
 
 module.exports = router;
